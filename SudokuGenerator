@@ -1,0 +1,95 @@
+import pygame
+import random
+#from pygame.locals import *
+#Followed this tutorial to install pygame: https://www.youtube.com/watch?v=EKjALzLLgVs
+
+#Used this link for finding a lot of pygame commands: https://www.pygame.org/docs/
+
+WINDOW_DIMENSIONS = (750,750)
+window = pygame.display.set_mode(WINDOW_DIMENSIONS )
+pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont('Fugaz One Regular', 90)
+black = (0,0,0)
+
+
+def DrawGrid():
+    window.fill(pygame.Color(130,250,255))
+    i = 1
+    while (i * 82.5) < 675:
+        pygame.draw.rect(window, pygame.Color("black"), pygame.Rect(0,0,750,750),10)
+        pygame.draw.rect(window, pygame.Color("black"), pygame.Rect(0,i * 82.5,750,750),5)
+        pygame.draw.rect(window, pygame.Color("black"), pygame.Rect(i * 82.5,0,750,750),5)
+        pygame.draw.rect(window, pygame.Color("black"), pygame.Rect(0,(i * 3) * 82.5,750,750),10)
+        pygame.draw.rect(window, pygame.Color("black"), pygame.Rect((i * 3) * 82.5,0,750,750),10)
+        i += 1    
+    pygame.display.flip()
+
+DrawGrid()
+
+def ValidMoveChecker(matrix, row, col, num): #Checks to see if current digit is in row or column
+    for i in range(9):
+        if matrix[row][i] == num or matrix[i][col] == num: #Nested indexing (17.7 Runestone)
+            return False
+
+    MiniRow = 3 * (row // 3) #Checks to see if current digit in square
+    MiniCol = 3 * (col // 3)
+    for i in range(3):
+        for j in range(3):
+            if matrix[MiniRow + i][MiniCol + j] == num: #Nested indexing (17.7 Runestone)
+                return False
+
+    return True
+
+def GridFiller(matrix):
+    for row in range(9):
+        for col in range(9):
+            if matrix[row][col] == "i":
+                numbers = [str(i) for i in range(1, 10)]
+                random.shuffle(numbers)
+                for num in numbers:
+                    if ValidMoveChecker(matrix, row, col, num):
+                        matrix[row][col] = num
+                        if GridFiller(matrix):
+                            return True
+                        matrix[row][col] = "i" 
+                return False
+    return matrix
+
+matrix = [["i" for i in range(9)] for i in range(9)] #creates a list with 9 lists in it to make the matrix
+#print(matrix)
+trueMatrix = [["i" for i in range(9)] for i in range(9)]
+
+GridFiller(matrix)
+
+def RemoveDigits(matrix):
+    for Digit in range(41):
+        row = random.randint(0,8)
+        col = random.randint(0,8)
+        matrix[row][col] = " "
+        
+RemoveDigits(matrix)
+
+def Render():
+    row = 0
+    while row < 9:
+        column = 0
+        while column < 9:
+            digitMatrix = matrix[row][column]
+            digitText = font.render(str(digitMatrix), True, black)
+            digitRectangle = digitText.get_rect(topleft=(column * 82.5 + 25, row * 82.5 + 20))
+            window.blit(digitText, digitRectangle)
+            column += 1  
+        row += 1  
+    pygame.display.flip()
+
+Render()
+
+print(matrix)
+
+running = True  #Allows the pygame window to stay open in Visual Studio. Followed this tutorial: https://www.youtube.com/watch?v=NoJvjtBVrnI
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
